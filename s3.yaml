@@ -1,0 +1,13 @@
+apiVersion: s3.aws.crossplane.io/v1beta1
+kind: Bucket
+metadata:
+  name: test293
+  namespace: crossplane-system
+spec:
+  forProvider:
+    acl: private
+    locationConstraint: ap-south-1
+    versioningConfiguration:
+      status: Enabled
+  providerConfigRef:
+    name: awsconfig

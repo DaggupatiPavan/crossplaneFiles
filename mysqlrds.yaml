@@ -1,0 +1,49 @@
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBInstance
+metadata:
+  name: prod-dbinstance
+  namespace: crossplane-system
+spec:
+  forProvider:
+    region: us-east-2
+    allocatedStorage: 20
+    autoMinorVersionUpgrade: true
+    autogeneratePassword: true
+    backupRetentionPeriod: 14
+    dbInstanceClass: db.t2.micro
+    dbName: prodMysql
+    engine: mysql
+    engineVersion: "8.0.28"
+    masterUsername: admin
+    masterUserPasswordSecretRef:
+      key: password
+      name: prod-dbinstance
+      namespace: crossplane-system
+    preferredBackupWindow: "7:00-8:00"
+    preferredMaintenanceWindow: "Sat:8:00-Sat:11:00"
+    publiclyAccessible: true
+    skipFinalSnapshot: true
+    storageEncrypted: false
+    storageType: gp2
+    #dbParameterGroupName: test-dbparametergroup
+    applyImmediately: true
+  writeConnectionSecretToRef:
+    name: prod-dbinstance-out
+    namespace: default
+  providerConfigRef:
+    name: awsconfig
+
+
+
+---
+
+
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: prod-dbinstance
+  namespace: crossplane-system
+type: Opaque
+data:
+  password: MWYyZDFlMmU2N2Rm

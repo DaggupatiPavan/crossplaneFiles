@@ -1,0 +1,134 @@
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: VPC
+metadata:
+  name: crsp-vpc
+spec:
+  forProvider:
+    region: us-east-1
+    cidrBlock: 192.168.0.0/16
+    enableDnsSupport: true
+    enableDnsHostNames: true
+    tags:
+    - key: Environment
+      value: Production
+    - key: Owner
+      value: tcs
+    - key: Name
+      value: crsp-vpc
+    instanceTenancy: default
+  providerConfigRef:
+    name: awsconfig
+
+---
+
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: Subnet
+metadata:
+  name: crsp-subnet-1
+spec:
+  forProvider:
+    region: us-east-1
+    availabilityZone: us-east-1b
+    cidrBlock: 192.168.3.0/24
+    vpcIdRef:
+      name: crsp-vpc
+    tags:
+    - key: Environment
+      value: Production
+    - key: Name
+      value: crsp-subnet-1
+    - key: Owner
+      value: tcs
+    mapPublicIPOnLaunch: true
+  providerConfigRef:
+    name: awsconfig
+
+---
+
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: Subnet
+metadata:
+  name: crsp-subnet-2
+spec:
+  forProvider:
+    region: us-east-1
+    availabilityZone: us-east-1c
+    cidrBlock: 192.168.2.0/24
+    vpcIdRef:
+      name: crsp-vpc
+    tags:
+    - key: Environment
+      value: Production
+    - key: Name
+      value: crsp-subnet-2
+    - key: Owner
+      value: tcs
+    mapPublicIPOnLaunch: true
+  providerConfigRef:
+    name: awsconfig
+
+---
+
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: InternetGateway
+metadata:
+  name: crsp-internetgateway
+spec:
+  forProvider:
+    region: us-east-1
+    vpcIdRef:
+      name: crsp-vpc
+  providerConfigRef:
+    name: awsconfig
+
+---
+
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: RouteTable
+metadata:
+  name: crsp-routetable
+spec:
+  forProvider:
+    region: us-east-1
+    routes:
+      - destinationCidrBlock: 0.0.0.0/0
+        gatewayIdRef:
+          name: crsp-internetgateway
+    associations:
+      - subnetIdRef:
+          name: crsp-subnet-2
+      - subnetIdRef:
+          name: crsp-subnet-1
+    vpcIdRef:
+      name: crsp-vpc
+  providerConfigRef:
+    name: awsconfig
+
+---
+
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: SecurityGroup
+metadata:
+  name: crsp-sg
+spec:
+  forProvider:
+    region: us-east-1
+    vpcIdRef:
+      name: crsp-vpc
+    groupName: mysql-sg
+    description: RDS communication to local application Pods
+    tags:
+    - key: Environment
+      value: Production
+    - key: Owner
+      value: tcs
+    - key: Name
+      value: crsp-VPC-sg
+    ingress:
+      - fromPort: 3306
+        toPort: 3306
+        ipProtocol: tcp
+        ipRanges:
+          - cidrIp: 0.0.0.0/0
+  providerConfigRef:
+    name: awsconfig

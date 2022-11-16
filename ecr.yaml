@@ -1,0 +1,59 @@
+apiVersion: ecr.aws.crossplane.io/v1beta1
+kind: Repository
+metadata:
+  name: ecr-repo
+  namespace: crossplane-syatem
+  labels:
+    region: us-east-2
+spec:
+  forProvider:
+    region: us-east-2
+    imageScanningConfiguration:
+      scanOnPush: true
+    imageTagMutability: IMMUTABLE
+  providerConfigRef:
+    name: awsconfig
+
+---
+
+apiVersion: ecr.aws.crossplane.io/v1beta1
+kind: RepositoryPolicy
+metadata:
+  name: ecr-policy-json
+  labels:
+    region: us-east-2
+spec:
+  forProvider:
+    region: us-east-2
+    repositoryName: ecr-repo
+    rawPolicy:  |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": [
+                "ecr:DescribeImages",
+                "ecr:DescribeRepositories"
+            ]
+          }
+        ]
+      }
+  providerConfigRef:
+    name: awsconfig
+
+---
+
+apiVersion: ecr.aws.crossplane.io/v1alpha1
+kind: LifecyclePolicy
+metadata:
+  name: ecr-lifepolicy
+spec:
+  forProvider:
+    region: us-east-2
+    repositoryNameRef:
+      name: ecr-repo
+    lifecyclePolicyText: '{"rules":[{"rulePriority":1,"description":"Expire images older than 30 days","selection":{"tagStatus":"untagged","countType":"sinceImagePushed","countUnit":"days","countNumber":30},"action":{"type":"expire"}}]}'
+  providerConfigRef:
+    name: awsconfig

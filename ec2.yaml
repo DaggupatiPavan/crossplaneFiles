@@ -1,0 +1,11 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: Instance
+metadata:
+  name: sample-instance
+spec:
+  forProvider:
+    region: us-east-2
+    imageId: ami-0568773882d492fc8
+    instanceType: t2.micro
+  providerConfigRef:
+     name: awsconfig

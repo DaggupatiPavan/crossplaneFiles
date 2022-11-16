@@ -1,0 +1,15 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: Instance
+metadata:
+  name: sample-instance
+spec:
+  forProvider:
+    region: us-east-1
+    imageId: ami-08c40ec9ead489470
+    instanceType: t2.micro
+    securityGroupRefs:
+      - name: crsp-sg
+    subnetIdRef:
+      name: crsp-subnet-1
+  providerConfigRef:
+     name: awsconfig
